@@ -13,10 +13,10 @@ gulp.task('default', function () {
 gulp.task('upload-to-sp', function () {
     gulp.src(["./Scripts/*.js"]/*, "./home.html"]*/)
       .pipe(spsave({
-          username: "ccdev2@murphyccdev.onmicrosoft.com",
-          password: "Surf1ng_",
-          siteUrl: "https://murphyccdev.sharepoint.com/sites/pub/",
-          folder: "Style Library/REST",
+          username: "user@tenant.onmicrosoft.com",
+          password: "Password",
+          siteUrl: "https://tenant.sharepoint.com/",
+          folder: "Style Library",
           checkin: false
       }));
 });
