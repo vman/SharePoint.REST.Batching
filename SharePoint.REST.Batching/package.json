@@ -1,0 +1,8 @@
+{
+	"version": "1.0.0",
+	"name": "ASP.NET",
+	"private": true,
+  "devDependencies": {
+    "gulp-spsave": "1.0.6"
+  }
+}
