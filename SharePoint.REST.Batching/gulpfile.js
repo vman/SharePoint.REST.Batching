@@ -5,11 +5,9 @@ Click here to learn more. http://go.microsoft.com/fwlink/?LinkId=518007
 
 var gulp = require('gulp');
 var spsave = require('gulp-spsave');
-var config = require('config');
 
-gulp.task('default', function () {
-    // place code for your default task here
-});
+//Create a config.js file at the same level as the gulpfile. 
+var config = require('./config');
 
 gulp.task('upload-to-sp', function () {
     gulp.src(["./Scripts/*.js"]/*, "./home.html"]*/)
@@ -17,7 +15,7 @@ gulp.task('upload-to-sp', function () {
           username: config.username,
           password: config.password,
           siteUrl: config.siteUrl,
-          folder: "Style Library",
+          folder: "Style Library/REST",
           checkin: false
       }));
 });
