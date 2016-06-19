@@ -13,8 +13,6 @@
         //Build Body of the Batch Request
         var batchRequestBody = buildBatchRequestBody(batchData, boundryID, changeSetID);
 
-        //var changeSetRequestBody = buildChangeSetBody()
-
         //Build Header of the Batch Request
         var batchRequestHeader = buildBatchRequestHeader(batchRequestBody, boundryID);
 
@@ -41,8 +39,62 @@
     //Build the batch request for each property individually
     function buildBatchRequestBody(batchData, boundryID, changeSetID) {
 
+        var changeSetBody = buildChangeSetBody(batchData, changeSetID);//test
+
+        var changeSetHeader = buildChangeSetHeader(changeSetBody, boundryID, changeSetID);
+
+        var getRequestBody = buildGETRequestBody(batchData, boundryID);
+
+
+        return changeSetHeader + "\n" + getRequestBody;
+
+    }
+
+    function buildGETRequestBody(batchData, boundryID) {
+
         var reqData = new Array();
-        
+
+        for (var i = 0; i < batchData.length; i++) {
+
+            var currentReq = batchData[i];
+
+            if (currentReq.verb == "GET") {
+
+                var reqRESTUrl = _spPageContextInfo.webAbsoluteUrl + currentReq.endpoint;
+                reqData.push('--batch_' + boundryID);
+                reqData.push('Content-Type: application/http');
+                reqData.push('Content-Transfer-Encoding: binary');
+                reqData.push('');
+                reqData.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
+                reqData.push('Accept: application/json;odata=nometadata');
+                reqData.push('');
+
+            }
+        }
+
+        return reqData.join('\r\n');
+    }
+
+    function buildChangeSetHeader(changeSetBody, boundryID, changeSetID) {
+
+        var changeSetHeader = new Array();
+        changeSetHeader.push('--batch_' + boundryID);
+        changeSetHeader.push('Content-Type: multipart/mixed; boundary="changeset_' + changeSetID + '"');
+        changeSetHeader.push('Content-Length: ' + changeSetBody.length);
+        changeSetHeader.push('Content-Transfer-Encoding: binary');
+        changeSetHeader.push('');
+        changeSetHeader.push(changeSetBody);
+        changeSetHeader.push('');
+        changeSetHeader.push('--changeset_' + changeSetID + '--');
+
+        return changeSetHeader.join('\r\n');
+
+    }
+
+    function buildChangeSetBody(batchData, changeSetID) {
+
+        var changeSetBody = new Array();
+
         for (var i = 0; i < batchData.length; i++) {
 
             var currentReq = batchData[i];
@@ -50,43 +102,21 @@
             if (currentReq.verb == "POST") {
 
                 var reqRESTUrl = _spPageContextInfo.webAbsoluteUrl + currentReq.endpoint;
-
-                reqData.push('');
-                reqData.push('--changeset_' + changeSetID);
-                reqData.push('Content-Type: application/http');
-                reqData.push('Content-Transfer-Encoding: binary');
-                reqData.push('');
-                reqData.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
-                reqData.push('Content-Type: application/json;odata=nometadata');
-                reqData.push('Accept: application/json;odata=nometadata');
-                reqData.push('');
-                reqData.push(JSON.stringify(currentReq.postData));
-                reqData.push('');
+                changeSetBody.push('');
+                changeSetBody.push('--changeset_' + changeSetID);
+                changeSetBody.push('Content-Type: application/http');
+                changeSetBody.push('Content-Transfer-Encoding: binary');
+                changeSetBody.push('');
+                changeSetBody.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
+                changeSetBody.push('Content-Type: application/json;odata=nometadata');
+                changeSetBody.push('Accept: application/json;odata=nometadata');
+                changeSetBody.push('');
+                changeSetBody.push(JSON.stringify(currentReq.postData));
+                changeSetBody.push('');
             }
         }
 
-        var csBody = reqData.join('\r\n');
-
-        reqData = new Array(); //test
-
-        reqData.push('--batch_' + boundryID);
-        reqData.push('Content-Type: multipart/mixed; boundary="changeset_' + changeSetID +'"');
-        reqData.push('Content-Length: ' + csBody.length);
-        reqData.push('Content-Transfer-Encoding: binary');
-        reqData.push('');
-        reqData.push(csBody);
-        reqData.push('');
-        reqData.push('--changeset_' + changeSetID + '--');
-
-        return reqData.join('\r\n');
-    }
-
-    function buildChangeSetBody() {
-
-    }
-
-    function buildChangeSetHeader() {
-
+        return changeSetBody.join('\r\n');
     }
 
     //Build the batch header containing the user profile data as the batch body

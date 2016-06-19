@@ -1,33 +1,32 @@
 ﻿var batchData = [
-    //{
-    //    endpoint: "/_api/SP.UserProfiles.PeopleManager/GetUserProfilePropertyFor(accountName=@v,propertyName='PreferredName')?@v='i:0%23.f|membership|ccdev1@murphyccdev.onmicrosoft.com'",
-    //    verb: "GET"
-    //},
     {
-        endpoint: "/_api/web/lists/GetByTitle('Test')/items",
-        verb: "POST",
-        postData: { "Title": "Daniel Ricciardo" }
+        endpoint: "/_api/SP.UserProfiles.PeopleManager/GetUserProfilePropertyFor(accountName=@v,propertyName='PreferredName')?@v='i:0%23.f|membership|ccdev1@tenant.onmicrosoft.com'",
+        verb: "GET"
     },
     {
         endpoint: "/_api/web/lists/GetByTitle('Test')/items",
         verb: "POST",
-        postData: { "Title": "Kimi Räikkönen" }
+        postData: { "Title": "REST API test 1" }
+    },
+    {
+        endpoint: "/_api/web/lists/GetByTitle('Test')/items",
+        verb: "POST",
+        postData: { "Title": "REST API test 2" }
 
     },
     {
         endpoint: "/_api/web/lists/GetByTitle('Test')/items",
         verb: "GET"
     },
-
-    //{
-    //    endpoint: "/_api/SP.UserProfiles.PeopleManager/SetSingleValueProfileProperty",
-    //    verb: "POST",
-    //    postData: {
-    //        accountName: "i:0#.f|membership|ccdev2@murphyccdev.onmicrosoft.com",
-    //        propertyName: 'AboutMe', //can also be used to set custom single value profile properties
-    //        propertyValue: 'batch rest api call'
-    //    }
-    //}
+    {
+        endpoint: "/_api/SP.UserProfiles.PeopleManager/SetSingleValueProfileProperty",
+        verb: "POST",
+        postData: {
+            accountName: "i:0#.f|membership|ccdev2@tenant.onmicrosoft.com",
+            propertyName: 'AboutMe', //can also be used to set custom single value profile properties
+            propertyValue: 'batch rest api call'
+        }
+    }
 ];
 
 SPRESTBatcher.Execute(batchData)
