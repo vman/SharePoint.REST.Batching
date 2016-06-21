@@ -14,10 +14,9 @@
         //Unique identifier, will be used to delimit different parts of the request body
         var boundryID = getRandonString();
 
-        var changeSetID = getRandonString();
 
         //Build Body of the Batch Request
-        var batchRequestBody = buildBatchRequestBody(batchData, boundryID, changeSetID);
+        var batchRequestBody = buildBatchRequestBody(batchData, boundryID);
 
         //Build Header of the Batch Request
         var batchRequestHeader = buildBatchRequestHeader(batchRequestBody, boundryID);
@@ -42,23 +41,9 @@
         return deferred.promise();
     };
 
-    //Build the batch request for each property individually
-    function buildBatchRequestBody(batchData, boundryID, changeSetID) {
+    function buildBatchRequestBody(batchData, boundryID) {
 
-        var changeSetBody = buildChangeSetBody(batchData, changeSetID);//test
-
-        var changeSetHeader = buildChangeSetHeader(changeSetBody, boundryID, changeSetID);
-
-        var getRequestBody = buildGETRequestBody(batchData, boundryID);
-
-
-        return changeSetHeader + "\n" + getRequestBody;
-
-    }
-
-    function buildGETRequestBody(batchData, boundryID) {
-
-        var reqData = new Array();
+        var batchRequestBody = "";
 
         for (var i = 0; i < batchData.length; i++) {
 
@@ -66,17 +51,41 @@
 
             if (currentReq.verb == "GET") {
 
-                var reqRESTUrl = _spPageContextInfo.webAbsoluteUrl + currentReq.endpoint;
-                reqData.push('--batch_' + boundryID);
-                reqData.push('Content-Type: application/http');
-                reqData.push('Content-Transfer-Encoding: binary');
-                reqData.push('');
-                reqData.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
-                reqData.push('Accept: ' + config.requestAcceptHeader);
-                reqData.push('');
+                var getRequestBody = buildGETRequestBody(currentReq, boundryID);
+
+                batchRequestBody += getRequestBody + "\n";
 
             }
+            else {
+
+                var changeSetID = getRandonString();
+
+                var changeSetBody = buildChangeSetBody(currentReq, changeSetID);
+
+                var changeSetHeader = buildChangeSetHeader(changeSetBody, boundryID, changeSetID);
+
+                batchRequestBody += changeSetHeader + "\n";
+            }
+
+
         }
+
+        return batchRequestBody;
+
+    }
+
+    function buildGETRequestBody(currentReq, boundryID) {
+
+        var reqData = new Array();
+
+        var reqRESTUrl = _spPageContextInfo.webAbsoluteUrl + currentReq.endpoint;
+        reqData.push('--batch_' + boundryID);
+        reqData.push('Content-Type: application/http');
+        reqData.push('Content-Transfer-Encoding: binary');
+        reqData.push('');
+        reqData.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
+        reqData.push('Accept: ' + config.requestAcceptHeader);
+        reqData.push('');
 
         return reqData.join('\r\n');
     }
@@ -97,39 +106,26 @@
 
     }
 
-    function buildChangeSetBody(batchData, changeSetID) {
+    function buildChangeSetBody(currentReq, changeSetID) {
 
         var changeSetBody = new Array();
 
-        for (var i = 0; i < batchData.length; i++) {
+        var reqRESTUrl = _spPageContextInfo.webAbsoluteUrl + currentReq.endpoint;
+        changeSetBody.push('');
+        changeSetBody.push('--changeset_' + changeSetID);
+        changeSetBody.push('Content-Type: application/http');
+        changeSetBody.push('Content-Transfer-Encoding: binary');
+        changeSetBody.push('');
+        changeSetBody.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
+        changeSetBody.push('Content-Type: ' + config.requestAcceptHeader);
+        changeSetBody.push('Accept: ' + config.requestAcceptHeader);
+        changeSetBody.push('IF-MATCH: *');
+        changeSetBody.push('X-HTTP-Method: ' + currentReq.verb);
 
-            var currentReq = batchData[i];
-
-            if (currentReq.verb == "POST" || currentReq.verb == "DELETE") {
-
-                var reqRESTUrl = _spPageContextInfo.webAbsoluteUrl + currentReq.endpoint;
-                changeSetBody.push('');
-                changeSetBody.push('--changeset_' + changeSetID);
-                changeSetBody.push('Content-Type: application/http');
-                changeSetBody.push('Content-Transfer-Encoding: binary');
-                changeSetBody.push('');
-                changeSetBody.push('POST' + ' ' + reqRESTUrl + ' HTTP/1.1');
-                
-                changeSetBody.push('Content-Type: ' + config.requestAcceptHeader);
-                changeSetBody.push('Accept: ' + config.requestAcceptHeader);
-
-                if (currentReq.verb == "DELETE") {
-                    changeSetBody.push('IF-MATCH: *');
-                    changeSetBody.push('X-HTTP-Method:' + currentReq.verb);
-                }
-
-                if (currentReq.verb == "POST") {
-                    changeSetBody.push('');
-                    changeSetBody.push(JSON.stringify(currentReq.postData));
-                    changeSetBody.push('');
-                }
-                
-            }
+        if (typeof currentReq.postData != 'undefined') {
+            changeSetBody.push('');
+            changeSetBody.push(JSON.stringify(currentReq.postData));
+            changeSetBody.push('');
         }
 
         return changeSetBody.join('\r\n');
