@@ -145,18 +145,26 @@
     }
 
     function parseResponse(batchResponse) {
-        //Extract the results back from the BatchResponse
-        var results = $.grep(batchResponse.split("\r\n"), function (responseLine) {
-            try {
-                return responseLine.indexOf("{") != -1 && typeof JSON.parse(responseLine) == "object";
-            }
-            catch (ex) { /*adding the try catch loop for edge cases where the line contains a { but is not a JSON object*/ }
-        });
 
-        //Convert JSON strings to JSON objects
-        return $.map(results, function (result) {
-            return JSON.parse(result);
-        });
+        var seperatedResponses = batchResponse.split("--batchresponse_");
+
+        var results = [];
+
+        $.each(seperatedResponses, function (index, response) {
+
+            if (response != "") {
+
+                var responseArray = response.split("\r\n");
+
+                var responseObject = {};
+                responseObject.status = responseArray[4];
+                responseObject.result = responseArray[7];
+
+                results.push(responseObject);
+            }
+        })
+
+        return results;
     }
 
     function getRandonString() {

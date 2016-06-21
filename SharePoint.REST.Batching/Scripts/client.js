@@ -1,10 +1,4 @@
 ﻿var batchData = [
-    //{
-    //    //Add an item to a list
-    //    endpoint: "/_api/web/lists/GetByTitle('Test')/items",
-    //    verb: "POST",
-    //    postData: { "Title": "REST API test first" }
-    //},
     {
         endpoint: "/_api/SP.UserProfiles.PeopleManager/GetMyProperties",
         verb: "GET"
@@ -21,17 +15,12 @@
         verb: "POST",
         postData: { "Title": "REST API test second" }
     },
-    //{
-    //    //Add an item to a list
-    //    endpoint: "/_api/web/lists/GetByTitle('Test')/items",
-    //    verb: "POST",
-    //    postData: { "Title": "REST API test third" }
-    //}
-    //{
-    //    //Add an item to a list
-    //    endpoint: "/_api/web/lists/GetByTitle('Test')",
-    //    verb: "DELETE",
-    //}
+        {
+        //Add an item to a list
+        endpoint: "/_api/web/lists/GetByTitle('Test')",
+        verb: "DELETE",
+    }
+
 ];
 
 SPRESTBatcher.Execute(batchData)
