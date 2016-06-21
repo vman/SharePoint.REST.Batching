@@ -1,6 +1,12 @@
 ﻿var SPRESTBatcher = (function ($) {
     'use strict';
 
+    var config = {
+        requestDigest: $("#__REQUESTDIGEST").val(),
+        requestAcceptHeader: "application/json;odata=nometadata"
+
+    };
+
     var execute = function (batchData) {
 
         var deferred = new $.Deferred();
@@ -18,7 +24,7 @@
 
         //Make the REST API call to the _api/$batch endpoint with the batch data
         var requestHeaders = {
-            'X-RequestDigest': $("#__REQUESTDIGEST").val(),
+            'X-RequestDigest': config.requestDigest,
             'Content-Type': 'multipart/mixed; boundary="batch_' + boundryID + '"'
         };
 
@@ -66,7 +72,7 @@
                 reqData.push('Content-Transfer-Encoding: binary');
                 reqData.push('');
                 reqData.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
-                reqData.push('Accept: application/json;odata=nometadata');
+                reqData.push('Accept: ' + config.requestAcceptHeader);
                 reqData.push('');
 
             }
@@ -99,7 +105,7 @@
 
             var currentReq = batchData[i];
 
-            if (currentReq.verb == "POST") {
+            if (currentReq.verb == "POST" || currentReq.verb == "DELETE") {
 
                 var reqRESTUrl = _spPageContextInfo.webAbsoluteUrl + currentReq.endpoint;
                 changeSetBody.push('');
@@ -107,12 +113,22 @@
                 changeSetBody.push('Content-Type: application/http');
                 changeSetBody.push('Content-Transfer-Encoding: binary');
                 changeSetBody.push('');
-                changeSetBody.push(currentReq.verb + ' ' + reqRESTUrl + ' HTTP/1.1');
-                changeSetBody.push('Content-Type: application/json;odata=nometadata');
-                changeSetBody.push('Accept: application/json;odata=nometadata');
-                changeSetBody.push('');
-                changeSetBody.push(JSON.stringify(currentReq.postData));
-                changeSetBody.push('');
+                changeSetBody.push('POST' + ' ' + reqRESTUrl + ' HTTP/1.1');
+                
+                changeSetBody.push('Content-Type: ' + config.requestAcceptHeader);
+                changeSetBody.push('Accept: ' + config.requestAcceptHeader);
+
+                if (currentReq.verb == "DELETE") {
+                    changeSetBody.push('IF-MATCH: *');
+                    changeSetBody.push('X-HTTP-Method:' + currentReq.verb);
+                }
+
+                if (currentReq.verb == "POST") {
+                    changeSetBody.push('');
+                    changeSetBody.push(JSON.stringify(currentReq.postData));
+                    changeSetBody.push('');
+                }
+                
             }
         }
 
